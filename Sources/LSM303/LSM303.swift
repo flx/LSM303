@@ -88,8 +88,8 @@ public class LSM303 {
         var magGain : MagGain = MagGain.LSM303_MAGGAIN_1_3
         var accScale : AccelScale = AccelScale.G2
 
-        convenience init() {self.init(for:.RaspberryPi3)}
-        init(for board: SupportedBoard) {
+        public convenience init() {self.init(for:.RaspberryPi3)}
+        public init(for board: SupportedBoard) {
                 let i2cs = SwiftyGPIO.hardwareI2Cs(for:board)!
                 self.i2c = i2cs[1] // not sure what i2cs[0] is ...
                 // Enable the accelerometer
@@ -101,7 +101,7 @@ public class LSM303 {
                 mag   = MagData(x: 0, y: 0, z: 0)
         }
 
-        func read() {
+        public func read() {
                 let xlo : UInt8 = i2c.readByte(LSM303_ADDRESS_ACCEL, command: AccelRegisters.OUT_X_L_A.rawValue); // Wire.read();
                 let xhi : UInt8 = i2c.readByte(LSM303_ADDRESS_ACCEL, command: AccelRegisters.OUT_X_H_A.rawValue); // Wire.read();
                 let ylo : UInt8 = i2c.readByte(LSM303_ADDRESS_ACCEL, command: AccelRegisters.OUT_Y_L_A.rawValue); // Wire.read();
@@ -132,12 +132,12 @@ public class LSM303 {
                 mag.z = ((Int16(azhi) << 8) | Int16(azlo))
         }
 
-        func setMagGain(gain: MagGain) {
+        public func setMagGain(gain: MagGain) {
                 self.magGain = gain
                 i2c.writeByte(LSM303_ADDRESS_MAG, command: MagRegisters.CRB_REG_M.rawValue, value: gain.rawValue)
         }
 
-        func setAccScale(scale: AccelScale) {
+        public func setAccScale(scale: AccelScale) {
                 self.accScale = scale
                 i2c.writeByte(LSM303_ADDRESS_ACCEL, command: AccelRegisters.CTRL_REG4_A.rawValue, value: scale.rawValue)
         }
