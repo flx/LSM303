@@ -117,9 +117,9 @@ public class LSM303 {
                         case .G8  : g =  4000.0
                         case .G16 : g = 12000.0
                 }
-                accel.x = Float((Int16(xhi) << 8) | Int16(xlo)) / g
-                accel.y = Float((Int16(yhi) << 8) | Int16(ylo)) / g
-                accel.z = Float((Int16(zhi) << 8) | Int16(zlo)) / g
+                accel.x = Float(((Int16(xhi) << 8) | Int16(xlo)) >> 2) / g
+                accel.y = Float(((Int16(yhi) << 8) | Int16(ylo)) >> 2) / g
+                accel.z = Float(((Int16(zhi) << 8) | Int16(zlo)) >> 2) / g
 		
 		// Read magnetometer
                 i2c.writeByte(LSM303_ADDRESS_MAG, value: MagRegisters.OUT_X_H_M.rawValue)
