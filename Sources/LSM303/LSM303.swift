@@ -83,8 +83,8 @@ public struct MagData {
 
 public class LSM303 {
         var i2c : I2CInterface
-        var accel : AccelData = AccelData(x: 0, y: 0, z: 0)
-        var mag   : MagData   = MagData(x: 0, y: 0, z: 0)
+        public var accel : AccelData = AccelData(x: 0, y: 0, z: 0)
+        public var mag   : MagData   = MagData(x: 0, y: 0, z: 0)
         var magGain : MagGain = MagGain.LSM303_MAGGAIN_1_3
         var accScale : AccelScale = AccelScale.G2
 
