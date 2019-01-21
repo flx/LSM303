@@ -5,7 +5,7 @@ let LSM303_ADDRESS_ACCEL = (0x32 >> 1)         // 0011001x
 let LSM303_ADDRESS_MAG   = (0x3C >> 1)         // 0011110x
 let LSM303_ID            = (0b11010100)
 
-enum AccelRegisters:UInt8 {
+public enum AccelRegisters:UInt8 {
         case CTRL_REG1_A     = 0x20 // 00000111   rw
         case CTRL_REG2_A     = 0x21 // 00000000   rw
         case CTRL_REG3_A     = 0x22 // 00000000   rw
@@ -38,14 +38,14 @@ enum AccelRegisters:UInt8 {
         case TIME_WINDOW_A   = 0x3D
 }
 
-enum AccelScale:UInt8 {
+public enum AccelScale:UInt8 {
         case G2  = 0b00000000 // Max is 2G
         case G4  = 0b00010000 // .. 4G
         case G8  = 0b00100000 // .. 8G
         case G16 = 0b00110000 // .. 16G
 }
 
-enum MagRegisters : UInt8 {
+public enum MagRegisters : UInt8 {
         case CRA_REG_M         = 0x00
         case CRB_REG_M         = 0x01
         case MR_REG_M          = 0x02
@@ -63,7 +63,7 @@ enum MagRegisters : UInt8 {
         case TEMP_OUT_L_M      = 0x32
 }
 
-enum MagGain : UInt8 {
+public enum MagGain : UInt8 {
         case LSM303_MAGGAIN_1_3                    = 0x20 // +/- 1.3
         case LSM303_MAGGAIN_1_9                    = 0x40 // +/- 1.9
         case LSM303_MAGGAIN_2_5                    = 0x60 // +/- 2.5
@@ -73,15 +73,15 @@ enum MagGain : UInt8 {
         case LSM303_MAGGAIN_8_1                    = 0xE0 // +/- 8.1
 }
 
-struct AccelData {
+public struct AccelData {
         var x, y, z : Float
 }
 
-struct MagData {
+public struct MagData {
         var x, y, z : Int16
 }
 
-class LSM303 {
+public class LSM303 {
         var i2c : I2CInterface
         var accel : AccelData = AccelData(x: 0, y: 0, z: 0)
         var mag   : MagData   = MagData(x: 0, y: 0, z: 0)
