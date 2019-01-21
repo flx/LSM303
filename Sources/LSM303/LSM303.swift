@@ -64,13 +64,13 @@ public enum MagRegisters : UInt8 {
 }
 
 public enum MagGain : UInt8 {
-        case LSM303_MAGGAIN_1_3                    = 0x20 // +/- 1.3
-        case LSM303_MAGGAIN_1_9                    = 0x40 // +/- 1.9
-        case LSM303_MAGGAIN_2_5                    = 0x60 // +/- 2.5
-        case LSM303_MAGGAIN_4_0                    = 0x80 // +/- 4.0
-        case LSM303_MAGGAIN_4_7                    = 0xA0 // +/- 4.7
-        case LSM303_MAGGAIN_5_6                    = 0xC0 // +/- 5.6
-        case LSM303_MAGGAIN_8_1                    = 0xE0 // +/- 8.1
+        case GAIN_1_3                    = 0x20 // +/- 1.3
+        case GAIN_1_9                    = 0x40 // +/- 1.9
+        case GAIN_2_5                    = 0x60 // +/- 2.5
+        case GAIN_4_0                    = 0x80 // +/- 4.0
+        case GAIN_4_7                    = 0xA0 // +/- 4.7
+        case GAIN_5_6                    = 0xC0 // +/- 5.6
+        case GAIN_8_1                    = 0xE0 // +/- 8.1
 }
 
 public struct AccelData {
@@ -78,14 +78,14 @@ public struct AccelData {
 }
 
 public struct MagData {
-        public var x, y, z : Int16
+        public var x, y, z : Float
 }
 
 public class LSM303 {
         var i2c : I2CInterface
         public var accel : AccelData = AccelData(x: 0, y: 0, z: 0)
         public var mag   : MagData   = MagData(x: 0, y: 0, z: 0)
-        var magGain : MagGain = MagGain.LSM303_MAGGAIN_1_3
+        var magGain : MagGain = MagGain.GAIN_1_3
         var accScale : AccelScale = AccelScale.G2
 
         public convenience init() {self.init(for:.RaspberryPi3)}
@@ -102,24 +102,26 @@ public class LSM303 {
         }
 
         public func read() {
-                let xlo : UInt8 = i2c.readByte(LSM303_ADDRESS_ACCEL, command: AccelRegisters.OUT_X_L_A.rawValue); // Wire.read();
+                // Read acceleration
+		let xlo : UInt8 = i2c.readByte(LSM303_ADDRESS_ACCEL, command: AccelRegisters.OUT_X_L_A.rawValue); // Wire.read();
                 let xhi : UInt8 = i2c.readByte(LSM303_ADDRESS_ACCEL, command: AccelRegisters.OUT_X_H_A.rawValue); // Wire.read();
                 let ylo : UInt8 = i2c.readByte(LSM303_ADDRESS_ACCEL, command: AccelRegisters.OUT_Y_L_A.rawValue); // Wire.read();
                 let yhi : UInt8 = i2c.readByte(LSM303_ADDRESS_ACCEL, command: AccelRegisters.OUT_Y_H_A.rawValue); // Wire.read();
                 let zlo : UInt8 = i2c.readByte(LSM303_ADDRESS_ACCEL, command: AccelRegisters.OUT_Z_L_A.rawValue); // Wire.read();
                 let zhi : UInt8 = i2c.readByte(LSM303_ADDRESS_ACCEL, command: AccelRegisters.OUT_Z_H_A.rawValue); // Wire.read();
-
-                var g : Float = 32768.0
+                
+		var g : Float = 1000.0
                 switch (self.accScale) {
-                        case .G2  : g /=  2.0
-                        case .G4  : g /=  4.0
-                        case .G8  : g /=  8.0
-                        case .G16 : g /= 16.0
+                        case .G2  : g =  1000.0
+                        case .G4  : g =  2000.0
+                        case .G8  : g =  4000.0
+                        case .G16 : g = 12000.0
                 }
                 accel.x = Float((Int16(xhi) << 8) | Int16(xlo)) / g
                 accel.y = Float((Int16(yhi) << 8) | Int16(ylo)) / g
                 accel.z = Float((Int16(zhi) << 8) | Int16(zlo)) / g
-
+		
+		// Read magnetometer
                 i2c.writeByte(LSM303_ADDRESS_MAG, value: MagRegisters.OUT_X_H_M.rawValue)
                 let axlo : UInt8 = i2c.readByte(LSM303_ADDRESS_MAG, command: MagRegisters.OUT_X_L_M.rawValue); // Wire.read();
                 let axhi : UInt8 = i2c.readByte(LSM303_ADDRESS_MAG, command: MagRegisters.OUT_X_H_M.rawValue); // Wire.read();
@@ -127,9 +129,21 @@ public class LSM303 {
                 let ayhi : UInt8 = i2c.readByte(LSM303_ADDRESS_MAG, command: MagRegisters.OUT_Y_H_M.rawValue); // Wire.read();
                 let azlo : UInt8 = i2c.readByte(LSM303_ADDRESS_MAG, command: MagRegisters.OUT_Z_L_M.rawValue); // Wire.read();
                 let azhi : UInt8 = i2c.readByte(LSM303_ADDRESS_MAG, command: MagRegisters.OUT_Z_H_M.rawValue); // Wire.read();
-                mag.x = ((Int16(axhi) << 8) | Int16(axlo))
-                mag.y = ((Int16(ayhi) << 8) | Int16(aylo))
-                mag.z = ((Int16(azhi) << 8) | Int16(azlo))
+                
+		var mxy : Float = 1.0
+		var mz  : Float = 1.0
+		switch (self.magGain) {
+			case .GAIN_1_3 : mxy = 1100.0; mz = 980.0 
+                        case .GAIN_1_9 : mxy =  855.0; mz = 760.0
+                        case .GAIN_2_5 : mxy =  670.0; mz = 600.0
+                        case .GAIN_4_0 : mxy =  450.0; mz = 400.0
+                        case .GAIN_4_7 : mxy =  400.0; mz = 355.0
+                        case .GAIN_5_6 : mxy =  330.0; mz = 295.0
+                        case .GAIN_8_1 : mxy =  230.0; mz = 105.0
+		}
+		mag.x = Float((Int16(axhi) << 8) | Int16(axlo)) / mxy
+                mag.y = Float((Int16(ayhi) << 8) | Int16(aylo)) / mxy
+                mag.z = Float((Int16(azhi) << 8) | Int16(azlo)) / mz
         }
 
         public func setMagGain(gain: MagGain) {
