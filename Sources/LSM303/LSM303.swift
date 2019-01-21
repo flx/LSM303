@@ -74,11 +74,11 @@ public enum MagGain : UInt8 {
 }
 
 public struct AccelData {
-        var x, y, z : Float
+        public var x, y, z : Float
 }
 
 public struct MagData {
-        var x, y, z : Int16
+        public var x, y, z : Int16
 }
 
 public class LSM303 {
